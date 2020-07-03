@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Image Finder</title>
+</head>
+<body>
+    <h1>Welcome to Image Finder!</h1>
+    {% from "_formhelpers.html" import render_field %}
+    {% if image_thumb %}
+    <img src="{{ image_thumb }}" alt="User Image">
+    {% endif %}
+    {% if form %}
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <dl>
+            {{ render_field(form.select) }}
+            <p>
+            {{ render_field(form.search) }}
+            </p></dl>
+        <p><input type="submit" value="Search">
+        </p></form>
+    {% endif %}
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h4>Click on the link bellow to view your photo.</h4>
+    <a href="{{ url_for('show_thumbnail', filename=filename) }}">Photo</a>
+{% endblock %}
