@@ -1,8 +1,7 @@
 from flask import Blueprint, redirect, url_for, render_template, current_app
 from app.forms import SearchForm
-from app.utils import thumb_image
+from app.utils import save_image, ImageSaveError
 import requests
-import os
 
 bp = Blueprint("route", __name__)
 
@@ -24,21 +23,17 @@ def photo():
         try:
             img_url = res.json()["urls"]["small"]
             h = requests.head(img_url)
-            content_type = h.headers.get('content-type').lower()
-            if content_type in ["image/jpg", "image/jpeg", "image/png"]:
+            content_type = h.headers.get('content-type')
+            if content_type.lower() in ["image/jpg", "image/jpeg", "image/png"]:
                 r = requests.get(img_url)
                 if r.status_code == 200:
                     file_ext = content_type.split("/")[1]
-                    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), current_app.config["MEDIA_FILE"], res.json()["id"] + "." + file_ext), "wb") as f:
-                        f.write(r.content)
-                    img_name = os.path.join(current_app.config["MEDIA_FILE"], res.json()["id"] + "." + file_ext)
-                    thumb_image(os.path.join(os.path.dirname(os.path.abspath(__file__)), img_name))
-                    return render_template("photo.html", filename=img_name)
-        except KeyError:
-            return None
-        return redirect(img_url)
-
-
-@bp.route('/<filename>', methods=["GET", "POST"])
-def show_thumbnail(filename):
-    return render_template("thumb.html", image_thumb=filename)
+                    file_name = res.json()["id"]+"."+file_ext
+                    save_image(img_name=file_name, img_content=r.content)
+                    return render_template("photo.html", filename=file_name)
+            else:
+                return render_template("415.html"), 415
+        except (KeyError, OSError, ImageSaveError, Exception):
+            return render_template("500.html"), 500
+    else:
+        return render_template("external_error.html"), res.status_code
