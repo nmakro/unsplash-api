@@ -1,22 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField
-
-color_list = [
-    "",
-    "red",
-    "blue",
-    "black_and_white",
-    "black",
-    "white",
-    "yellow",
-    "orange",
-    "purple",
-    "magenta",
-    "green",
-    "teal",
-]
-
-orientation_list = ["landscape", "portrait", "squarish"]
+from app.utils import color_list, orientation_list
 
 
 class SearchForm(FlaskForm):
@@ -25,11 +9,15 @@ class SearchForm(FlaskForm):
     search = StringField("")
 
     def validate_select(self, select):
-        if select.data == "Color" and self.search.data not in color_list:
+        if select.data == "Color" and (
+            self.search.data not in color_list and not self.search.data == ""
+        ):
             self.select.errors.append(
                 f"Please use one of {color_list} for your color selection"
             )
-        elif select.data == "Orientation" and self.search.data not in orientation_list:
+        elif select.data == "Orientation" and (
+            self.search.data not in orientation_list and not self.search.data == ""
+        ):
             self.select.errors.append(
                 f"Please use one of {orientation_list} for your orientation selection"
             )

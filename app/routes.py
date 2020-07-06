@@ -1,6 +1,6 @@
 from flask import Blueprint, redirect, url_for, render_template, current_app, request
 from app.forms import SearchForm
-from app.utils import save_image, ImageSaveError
+from app.utils import save_image, ImageSaveError, create_query, is_image
 import requests
 
 bp = Blueprint("route", __name__)
@@ -22,13 +22,9 @@ def home():
 
 @bp.route("/photo", methods=["GET", "POST"])
 def photo():
-    query = None
-    try:
-        query = {
-            "query": {f"{request.args['search_param'].lower()}:{request.args['data']}"}
-        }
-    except KeyError:
-        pass
+    query = create_query(
+        search_param=request.args.get("search_param"), data=request.args.get("data")
+    )
     auth_headers = {
         "Authorization": f"Client-ID {current_app.config['ACCESS_KEY']}",
         "Accept-Version": "v1",
@@ -45,7 +41,7 @@ def photo():
             img_url = res.json()["urls"]["small"]
             h = requests.head(img_url)
             content_type = h.headers.get("content-type")
-            if content_type.lower() in ["image/jpg", "image/jpeg", "image/png"]:
+            if is_image(content_type):
                 r = requests.get(img_url)
                 if r.status_code == 200:
                     file_ext = content_type.split("/")[1]
