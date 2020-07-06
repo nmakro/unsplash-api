@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, url_for, render_template, current_app
+from flask import Blueprint, redirect, url_for, render_template, current_app, request
 from app.forms import SearchForm
 from app.utils import save_image, ImageSaveError
 import requests
@@ -8,17 +8,22 @@ bp = Blueprint("route", __name__)
 
 @bp.route('/', methods=["GET", "POST"])
 def home():
-    search = SearchForm()
-    if search.validate_on_submit():
-        return redirect(url_for("route.photo"))
-    return render_template("base.html", form=search)
+    search_form = SearchForm()
+    if search_form.validate_on_submit():
+        return redirect(url_for("route.photo", search_param=search_form.select.data, data=search_form.search.data))
+    return render_template("base.html", form=search_form)
 
 
 @bp.route('/photo', methods=["GET", "POST"])
 def photo():
-    query_params = {"query": "color:green"}
+    query = None
+    try:
+        query = {"query": {f"{request.args['search_param'].lower()}:{request.args['data']}"}}
+    except KeyError:
+        pass
     auth_headers = {"Authorization": f"Client-ID {current_app.config['ACCESS_KEY']}", "Accept-Version": "v1"}
-    res = requests.get(current_app.config["RANDOM_URL"], headers=auth_headers, params=query_params)
+    res = requests.get(current_app.config["RANDOM_URL"], headers=auth_headers, params=query) \
+        if query is not None else requests.get(current_app.config["RANDOM_URL"], headers=auth_headers)
     if res.status_code == 200:
         try:
             img_url = res.json()["urls"]["small"]
