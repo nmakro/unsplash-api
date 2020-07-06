@@ -51,11 +51,19 @@ class TestRoutes(flask_testing.TestCase):
 
     def testPhotoRoute(self):
         with self.app.test_client() as c:
-            attrs = {"json.return_value": {"urls": {"small": "https://images.unsplash.com/photo-123"}, "id": "photo-123"}}
-            self.mock_Request.get.side_effect = [Mock(status_code=200, **attrs), Mock(status_code=200, content=b"0x410x420x43")]
+            attrs = {
+                "json.return_value": {
+                    "urls": {"small": "https://images.unsplash.com/photo-123"},
+                    "id": "photo-123",
+                }
+            }
+            self.mock_Request.get.side_effect = [
+                Mock(status_code=200, **attrs),
+                Mock(status_code=200, content=b"0x410x420x43"),
+            ]
             self.mock_Request.head.return_value.headers.get.return_value = "image/jpeg"
             m = unittest.mock.mock_open()
-            with unittest.mock.patch('app.utils.open', m):
+            with unittest.mock.patch("app.utils.open", m):
                 c.get("/photo")
                 m.return_value.write.assert_called_with(b"0x410x420x43")
             self.assert_template_used("photo.html")
@@ -63,9 +71,16 @@ class TestRoutes(flask_testing.TestCase):
         self.mock_Request.get.reset_mock(side_effect=True, return_value=True)
 
         with self.app.test_client() as c:
-            attrs = {"json.return_value": {"urls": {"small": "https://images.unsplash.com/photo-123"}, "id": "photo-123"}}
+            attrs = {
+                "json.return_value": {
+                    "urls": {"small": "https://images.unsplash.com/photo-123"},
+                    "id": "photo-123",
+                }
+            }
             self.mock_Request.get.side_effect = [Mock(status_code=200, **attrs)]
-            self.mock_Request.head.return_value.headers.get.return_value = "video/x-msvideo"
+            self.mock_Request.head.return_value.headers.get.return_value = (
+                "video/x-msvideo"
+            )
             res = c.get("/photo")
             self.assert_template_used("415.html")
             res.status_code = 415
@@ -79,15 +94,23 @@ class TestRoutes(flask_testing.TestCase):
         self.mock_Request.get.reset_mock(side_effect=True, return_value=True)
 
         with self.app.test_client() as c:
-            attrs = {"json.return_value": {"urls": {"small": "https://images.unsplash.com/photo-123"}, "id": "photo-123"}}
-            self.mock_Request.get.side_effect = [Mock(status_code=200, **attrs), Mock(status_code=200, content=b"0x410x420x43")]
+            attrs = {
+                "json.return_value": {
+                    "urls": {"small": "https://images.unsplash.com/photo-123"},
+                    "id": "photo-123",
+                }
+            }
+            self.mock_Request.get.side_effect = [
+                Mock(status_code=200, **attrs),
+                Mock(status_code=200, content=b"0x410x420x43"),
+            ]
             self.mock_Request.head.return_value.headers.get.return_value = "image/jpeg"
             self.mock_Image.open.return_value.save.side_effect = Exception
             m = unittest.mock.mock_open()
-            with unittest.mock.patch('app.utils.open', m):
+            with unittest.mock.patch("app.utils.open", m):
                 c.get("/photo")
             self.assert_template_used("500.html")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

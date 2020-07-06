@@ -6,24 +6,40 @@ import requests
 bp = Blueprint("route", __name__)
 
 
-@bp.route('/', methods=["GET", "POST"])
+@bp.route("/", methods=["GET", "POST"])
 def home():
     search_form = SearchForm()
     if search_form.validate_on_submit():
-        return redirect(url_for("route.photo", search_param=search_form.select.data, data=search_form.search.data))
+        return redirect(
+            url_for(
+                "route.photo",
+                search_param=search_form.select.data,
+                data=search_form.search.data,
+            )
+        )
     return render_template("base.html", form=search_form)
 
 
-@bp.route('/photo', methods=["GET", "POST"])
+@bp.route("/photo", methods=["GET", "POST"])
 def photo():
     query = None
     try:
-        query = {"query": {f"{request.args['search_param'].lower()}:{request.args['data']}"}}
+        query = {
+            "query": {f"{request.args['search_param'].lower()}:{request.args['data']}"}
+        }
     except KeyError:
         pass
-    auth_headers = {"Authorization": f"Client-ID {current_app.config['ACCESS_KEY']}", "Accept-Version": "v1"}
-    res = requests.get(current_app.config["RANDOM_URL"], headers=auth_headers, params=query) \
-        if query is not None else requests.get(current_app.config["RANDOM_URL"], headers=auth_headers)
+    auth_headers = {
+        "Authorization": f"Client-ID {current_app.config['ACCESS_KEY']}",
+        "Accept-Version": "v1",
+    }
+    res = (
+        requests.get(
+            current_app.config["RANDOM_URL"], headers=auth_headers, params=query
+        )
+        if query is not None
+        else requests.get(current_app.config["RANDOM_URL"], headers=auth_headers)
+    )
     if res.status_code == 200:
         try:
             img_url = res.json()["urls"]["small"]
