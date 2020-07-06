@@ -41,8 +41,10 @@ class TestRoutes(flask_testing.TestCase):
     def testSearchPhoto(self):
         with self.app.test_client() as c:
             self.mock_Form().validate_on_submit.return_value = True
+            self.mock_Form().select = Mock(data="color")
+            self.mock_Form().search = Mock(data="red")
             r = c.post("/")
-            self.assertRedirects(r, "/photo")
+            self.assertRedirects(r, "/photo?search_param=color&data=red")
 
         with self.app.test_client() as c:
             self.mock_Form().validate_on_submit.return_value = False
@@ -88,6 +90,13 @@ class TestRoutes(flask_testing.TestCase):
     def testPhotoRouteError(self):
         with self.app.test_client() as c:
             self.mock_Request.get.return_value = Mock(status_code=404)
+            c.get("/photo")
+            self.assert_template_used("404.html")
+
+        self.mock_Request.get.reset_mock(side_effect=True, return_value=True)
+
+        with self.app.test_client() as c:
+            self.mock_Request.get.return_value = Mock(status_code=410)
             c.get("/photo")
             self.assert_template_used("external_error.html")
 
