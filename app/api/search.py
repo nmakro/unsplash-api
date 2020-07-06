@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 from flask import jsonify, request, current_app
 from app.api import bp
 from app.utils import create_query, is_image, save_image, validate_query, ImageSaveError
